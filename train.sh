@@ -1,0 +1,1 @@
+python3 -m run.train --distributed --config_json train_config.json
