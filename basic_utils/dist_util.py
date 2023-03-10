@@ -149,7 +149,7 @@ def sync_params(params, src=0, group=None, async_op=False):
     if not is_initialized():
         return
     for p in params:
-        broadcast(params, src, group=group, async_op=async_op)
+        broadcast(p, src, group=group, async_op=async_op)
 
 
 def find_free_port():

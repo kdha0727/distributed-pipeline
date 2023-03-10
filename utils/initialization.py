@@ -12,11 +12,16 @@ def seed_all(seed, deterministic=False):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)  # contains torch.cuda.manual_seed_all
-    # Add your seeder on your own
+    # TODO: Add your seeder if needed
 
 
 def create_model_from_config(
-        **kwargs
+        *,
+        argument1,
+        argument2,
+        argument3,
+        **_
 ):
+    # TODO: Implement this function
     model = ...
     return model

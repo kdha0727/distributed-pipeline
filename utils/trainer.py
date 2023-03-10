@@ -13,16 +13,16 @@ from basic_utils import dist_util, logger
 class TrainLoop:
 
     def log_loss_dict(self, mode, losses, *args, **kwargs):  # mode: train or eval
-        # # # # # # # # # # Add your loss logging function with logger.logkv_mean # # # # # # # # # #
+        # TODO: Add your loss logging function with logger.logkv_mean
         raise NotImplementedError
 
-    def compute_losses(self, batch):
-        # # # # # # # # # # Add your loss function with logger.logkv_mean # # # # # # # # # #
+    def compute_losses(self, micro_batch):
+        # TODO: Add your loss function with logger.logkv_mean
         raise NotImplementedError
 
     @staticmethod
     def backward_from_losses(losses):
-        # # # # # # # # # # Add your loss-reducing function # # # # # # # # # #
+        # TODO: Add your loss-reducing function
         loss = ...
         loss.backward()
 
@@ -35,14 +35,14 @@ class TrainLoop:
         elif isinstance(batch, list):
             return cls.get_batch_length(batch[0])
         else:
-            # # # # # # # # # # Add your custom function # # # # # # # # # #
+            # TODO: Add your custom function if needed
             raise TypeError("Unsupported batch type: {}".format(type(batch).__name__))
 
     def __init__(
             self,
             *,
             model,
-            # # # # # # # # # # Add your arguments # # # # # # # # # #
+            # TODO: Add your arguments
             data,
             batch_size,
             microbatch,
@@ -78,7 +78,7 @@ class TrainLoop:
         self.learning_steps = learning_steps
         self.gradient_clipping = gradient_clipping
 
-        # # # # # # # # # # Add your arguments # # # # # # # # # #
+        # TODO: Add your arguments
 
         self.step = 0
         self.resume_step = 0
@@ -124,7 +124,7 @@ class TrainLoop:
             self.ddp_model = self.model
 
         # In checkpoint-loading process, sometimes GPU 0 is used and allocated.
-        # After all process is done,
+        # After all process is done, free GPU 0 by function below:
         torch.cuda.empty_cache()
 
     # # # # # # # # # # # # # # # Implemented Functions # # # # # # # # # # # # # # #
