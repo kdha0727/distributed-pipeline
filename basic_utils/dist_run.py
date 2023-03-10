@@ -1,5 +1,19 @@
-def run_argv_as_distributed(program_or_module, argv, dist_namespace, *, run_as_module=False):
+"""
+Running utils of torch.distributed.run.
+All you have to do is wrap ArgumentParser with `parse_and_autorun` function.
 
+usage in main module
+========================================================
+original:   parser.parse_args(args, namespace)
+new:        parse_and_autorun(parser, args, namespace)
+
+"""
+
+
+def run_argv_as_distributed(program_or_module, argv, dist_namespace, *, run_as_module=False):
+    """
+    runs torch.distributed.run, and prints same command line to commandline.
+    """
     import os
     import psutil
 
@@ -41,6 +55,10 @@ def run_argv_as_distributed(program_or_module, argv, dist_namespace, *, run_as_m
 
 
 def create_distributed_parser(parser=None):
+    """
+    Almost same as argument parser of torch.distributed.run, but with some tricks...
+    """
+
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
     from torch.distributed.argparse_util import env, check_env
     from torch.cuda import is_available
@@ -98,9 +116,9 @@ def create_distributed_parser(parser=None):
         "--standalone",
         action=check_env,
         help="Start a local standalone rendezvous backend that is represented by a C10d TCP store "
-        "on port 29400. Useful when launching single-node, multi-worker job. If specified "
-        "--rdzv_backend, --rdzv_endpoint, --rdzv_id are auto-assigned; any explicitly set values "
-        "are ignored.",
+             "on port 29400. Useful when launching single-node, multi-worker job. If specified "
+             "--rdzv_backend, --rdzv_endpoint, --rdzv_id are auto-assigned; any explicitly set values "
+             "are ignored.",
     )
     parser.add_argument(
         "--max_restarts",
@@ -148,8 +166,8 @@ def create_distributed_parser(parser=None):
         type=str,
         default=None,
         help="Base directory to use for log files (e.g. /var/log/torch/elastic). The same "
-        "directory is re-used for multiple runs (a unique job-level sub-directory is created with "
-        "rdzv_id as the prefix).",
+             "directory is re-used for multiple runs (a unique job-level sub-directory is created with "
+             "rdzv_id as the prefix).",
     )
     parser.add_argument(
         "-r",
@@ -158,8 +176,8 @@ def create_distributed_parser(parser=None):
         type=str,
         default="0",
         help="Redirect std streams into a log file in the log directory (e.g. [-r 3] redirects "
-        "both stdout+stderr for all workers, [-r 0:1,1:2] redirects stdout for local rank 0 and "
-        "stderr for local rank 1).",
+             "both stdout+stderr for all workers, [-r 0:1,1:2] redirects stdout for local rank 0 and "
+             "stderr for local rank 1).",
     )
     parser.add_argument(
         "-t",
@@ -182,8 +200,8 @@ def create_distributed_parser(parser=None):
         type=str,
         action=env,
         help="Address of the master node (rank 0). It should be either the IP address or the "
-        "hostname of rank 0. For single node multi-proc training the --master_addr can simply be "
-        "127.0.0.1; IPv6 should have the pattern `[0:0:0:0:0:0:0:1]`.",
+             "hostname of rank 0. For single node multi-proc training the --master_addr can simply be "
+             "127.0.0.1; IPv6 should have the pattern `[0:0:0:0:0:0:0:1]`.",
     )
     parser.add_argument(
         "--master_port",
@@ -191,12 +209,15 @@ def create_distributed_parser(parser=None):
         type=int,
         action=env,
         help="Port on the master node (rank 0) to be used for communication during distributed "
-        "training.",
+             "training.",
     )
     return parser
 
 
 def parse_distributed_args(parser, args=None, parse_all=True):
+    """
+    this function makes ArgumentParser available to receive arguments of torch.distributed.run.
+    """
 
     dist_parser = create_distributed_parser()
     dist_parser.prog = len(parser.prog)
@@ -214,14 +235,15 @@ def parse_distributed_args(parser, args=None, parse_all=True):
         pass
     for _parser in subparsers:
         dist_parser.prog = " " * len(_parser.prog)
-        _parser.usage = ("\n" if _parser is parser else "\n       ").join(_parser._get_formatter()._format_usage(  # NOQA
-            _parser.usage, _parser._actions, _parser._mutually_exclusive_groups, "" # NOQA
-        ).splitlines())
+        _parser.usage = ("\n" if _parser is parser else "\n       ").join(
+            _parser._get_formatter()._format_usage(  # NOQA
+                _parser.usage, _parser._actions, _parser._mutually_exclusive_groups, ""  # NOQA
+            ).splitlines())
         _parser.usage += dist_parser.format_usage().replace("usage: ", " " * 7 if _parser is parser else "")
         _parser.epilog = (
-            "NOTE - You can run this script with [torch.distributed]. "
-            "Add `--distributed` argument, and other options from `python3 -m torch.distributed.run --help`. "
-            "signature: " + dist_parser.format_usage().replace("usage: ", "")
+                "NOTE - You can run this script with [torch.distributed]. "
+                "Add `--distributed` argument, and other options from `python3 -m torch.distributed.run --help`. "
+                "signature: " + dist_parser.format_usage().replace("usage: ", "")
         )
 
     dist_parser.prog = " " * len(parser.prog)
@@ -234,6 +256,9 @@ def parse_distributed_args(parser, args=None, parse_all=True):
 
 
 def get_main_modname():
+    """
+    get main module(__name__=='__main__')'s run-name (to make running from runpy available.)
+    """
     import os
     import sys
     depth = 1
@@ -259,9 +284,13 @@ def get_main_modname():
 
 def parse_and_autorun(parser, args=None, namespace=None, *, module_name=None, parse_all=True):
     """
-    usage
-    original: parser.parse_args()
-    new:      parse_and_autorun(parser)
+    this function makes ArgumentParser available to receive arguments and run torch.distributed.run built-in.
+
+    usage in main module
+    ========================================================
+    original:   parser.parse_args(args, namespace)
+    new:        parse_and_autorun(parser, args, namespace)
+
     """
 
     import os
@@ -269,31 +298,30 @@ def parse_and_autorun(parser, args=None, namespace=None, *, module_name=None, pa
 
     if args is None:
         args = sys.argv[1:]
-    if module_name is None:  # try to run as module
-        module_name = get_main_modname()
-    if module_name is None:
-        run_as_module = False
-        program_or_module = sys.argv[0]
-    else:
-        run_as_module = True
-        program_or_module = module_name
-
     dist_namespace, args = parse_distributed_args(parser, args=args, parse_all=False)
-    if parse_all:
-        result = parser.parse_args(args, namespace)
-    else:
-        result = args
 
     if dist_namespace.__dict__.pop('distributed'):
+        if module_name is None:  # try to run as module
+            module_name = get_main_modname()
+        if module_name is None:
+            run_as_module = False
+            program_or_module = sys.argv[0]
+        else:
+            run_as_module = True
+            program_or_module = module_name
         os.environ["DIST_UTIL_AUTORUN_FLAG"] = "1"
-        sys.exit(run_argv_as_distributed(program_or_module, args, dist_namespace, run_as_module=run_as_module))
-
-    if int(os.getenv("DIST_UTIL_AUTORUN_FLAG", "0")) == 1:  # subprocess called by this function
-        from .dist_util import is_available
-        is_available.cache = True
-        try:  # If available, set process title with node name.
-            import setproctitle  # NOQA
-            setproctitle.setproctitle(f"[DISTRIBUTED NODE {os.getenv('LOCAL_RANK', '0')}]")
-        except ImportError:
-            pass
-    return result
+        run_argv_as_distributed(program_or_module, args, dist_namespace, run_as_module=run_as_module)
+        sys.exit(0)
+    else:
+        if int(os.getenv("DIST_UTIL_AUTORUN_FLAG", "0")) == 1:  # subprocess called by this function
+            from .dist_util import is_available
+            is_available.cache = True
+            try:  # If available, set process title with node name.
+                import setproctitle  # NOQA
+                setproctitle.setproctitle(f"[DISTRIBUTED NODE {os.getenv('LOCAL_RANK', '0')}]")
+            except ImportError:
+                pass
+        if parse_all:
+            return parser.parse_args(args, namespace)
+        else:
+            return args
