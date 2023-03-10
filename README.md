@@ -11,8 +11,8 @@
 * Complete `utils/initialization.py`'s `create_model_from_config` function.
 * Complete some method of `utils/initialization.py`'s `TrainLoop` class.
   * `log_loss_dict` method: logging function of loss values dict.
-  * `compute_losses` method: 
-  * `backward_from_losses` method:
+  * `compute_losses` method: calculate `losses` from `micro_batch` and TrainLoop vars
+  * `backward_from_losses` method: make single `loss` from `losses`, and run `loss.backward()`
   * `__init__` method: add your extra values to TrainLoop vars if needed.
 * Complete `run/train.py` to make sense with all code signatures you modified.
 * Modify setting json file, after copying default train settings with command,
