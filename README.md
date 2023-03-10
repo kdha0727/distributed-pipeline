@@ -1,8 +1,6 @@
 # Pytorch pipeline with `torch.distributed`
 
-`utils.trainer.TrainLoop` will run training compatible with torch.distributed.run
-
-<br>
+`utils.trainer.TrainLoop` will run training loop - compatible with torch.distributed.run
 
 ## All you need to do
 
