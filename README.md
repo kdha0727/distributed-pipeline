@@ -4,6 +4,12 @@
 
 ## All you need to do
 
+### Make new repository from this template repository
+
+* Click `Use this template` - `Create a new repository`.
+
+### Complete codes
+
 * Complete `config/train.py`'s `TrainSettings`(or `YourSettings`) class.
   * this setting class is compatible with argparse and json.
 * Complete `data/__init__.py`'s `load_data_from_args` function.
