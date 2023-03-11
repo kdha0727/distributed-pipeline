@@ -9,7 +9,7 @@
 * Complete `data/__init__.py`'s `load_data_from_args` function.
 * Complete `model` package.
 * Complete `utils/initialization.py`'s `create_model_from_config` function.
-* Complete some method of `utils/initialization.py`'s `TrainLoop` class.
+* Complete some method of `utils/trainer.py`'s `TrainLoop` class.
   * `log_loss_dict` method: logging function of loss values dict.
   * `compute_losses` method: calculate `losses` from `micro_batch` and TrainLoop vars
   * `backward_from_losses` method: make single `loss` from `losses`, and run `loss.backward()`
