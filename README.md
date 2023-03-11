@@ -1,6 +1,5 @@
 # Pytorch pipeline with `torch.distributed`
 
-`utils.trainer.TrainLoop` will run training loop - compatible with torch.distributed.run
 
 ## All you need to do
 
@@ -28,8 +27,8 @@
 
 ## How to run
 
-after completion, you can run train script with
-
-```bash
-python3 -m run.train --distributed --config_json train_config.json
-```
+* `utils.trainer.TrainLoop` will run training loop - compatible with torch.distributed.run
+* after completion, you can run train script with
+  ```bash
+  python3 -m run.train --distributed --config_json train_config.json
+  ```
