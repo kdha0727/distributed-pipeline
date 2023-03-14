@@ -1,3 +1,7 @@
+"""
+Trainer copied and adapted from:
+https://github.com/Shark-NLP/DiffuSeq/blob/8bfafcbb26df218073b8117234afb9de9dfcbec9/train_util.py
+"""
 import copy
 import os
 
