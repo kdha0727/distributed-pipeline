@@ -27,3 +27,14 @@ after completion, you can run train script with
 ```bash
 python3 -m run.train --distributed --config_json train_config.json
 ```
+
+## Citations
+
+```bibtex
+@inproceedings{gong2022diffuseq,
+  author = {Gong, Shansan and Li, Mukai and Feng, Jiangtao and Wu, Zhiyong and Kong, Lingpeng},
+  booktitle = {International Conference on Learning Representations, ICLR},
+  title = {{DiffuSeq}: Sequence to Sequence Text Generation with Diffusion Models},
+  year = 2023
+}
+```
