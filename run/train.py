@@ -1,3 +1,4 @@
+from torch.distributed.elastic.multiprocessing.errors import record
 from config.train import TrainSettings
 
 
@@ -5,6 +6,7 @@ def create_parser():
     return TrainSettings.to_argparse(add_json=True)
 
 
+@record
 def main(namespace):
 
     # Create config from parsed argument namespace
