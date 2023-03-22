@@ -122,5 +122,4 @@ def main(namespace):
 
 
 if __name__ == "__main__":
-    from basic_utils.dist_run import parse_and_autorun
-    main(parse_and_autorun(create_parser()))
+    main(create_parser().parse_args())

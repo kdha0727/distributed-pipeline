@@ -1,1 +1,1 @@
-python3 -m run.train --distributed --config_json train_config.json
+torchrun --nproc_per_node gpu -m run.train --config_json train_config.json
