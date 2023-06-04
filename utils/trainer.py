@@ -115,14 +115,15 @@ class TrainLoop:
         if dist_util.is_initialized():
             self.use_ddp = True
             print(dist_util.dev())
-            self.ddp_model = DistributedDataParallel(
-                self.model,
-                device_ids=[dist_util.dev()],
-                output_device=dist_util.dev(),
+            ddp_kwargs = dict(
                 broadcast_buffers=False,
                 bucket_cap_mb=128,
                 find_unused_parameters=False,
             )
+            if not torch.cuda.is_available():
+                ddp_kwargs.update(device_ids=[dist_util.dev()])
+                ddp_kwargs.update(output_device=dist_util.dev())
+            self.ddp_model = DistributedDataParallel(self.model, **ddp_kwargs)
         else:
             self.use_ddp = False
             self.ddp_model = self.model

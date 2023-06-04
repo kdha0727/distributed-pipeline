@@ -2,8 +2,9 @@ from torch.distributed.elastic.multiprocessing.errors import record
 from config.train import TrainSettings
 
 
-def create_parser():
-    return TrainSettings.to_argparse(add_json=True)
+def parse_args():
+    parser = TrainSettings.to_argparse(add_json=True)
+    return parser.parse_args()
 
 
 @record
@@ -24,7 +25,8 @@ def main(namespace):
     from utils.trainer import TrainLoop
 
     # Setup distributed
-    dist_util.setup_dist()
+    if os.getenv("LOCAL_RANK", None):
+        dist_util.setup_dist()
     rank = dist_util.get_rank()
     dist_util.barrier()  # Sync
 
@@ -122,4 +124,4 @@ def main(namespace):
 
 
 if __name__ == "__main__":
-    main(create_parser().parse_args())
+    main(parse_args())
