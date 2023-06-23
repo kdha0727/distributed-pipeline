@@ -27,19 +27,20 @@
 from torch.distributed.elastic.multiprocessing.errors import record
 
 
-@record
 def main():
 
     import os
     import torch
     from basic_utils import dist_util
 
-    if os.getenv("LOCAL_RANK", None):
+    if os.getenv("LOCAL_RANK", None) and not dist_util.is_initialized():
         dist_util.setup_dist()
+        with dist_util.with_dist_cleanup():
+            main()
+        return
     rank = dist_util.get_rank()
     dist_util.barrier()
 
-    # Initialize model
     class Model(torch.nn.Module):
 
         def __init__(self):
@@ -96,7 +97,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    record(main)()
 
 ```
 
