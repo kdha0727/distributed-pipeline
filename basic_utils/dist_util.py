@@ -110,6 +110,15 @@ def cleanup_dist():
         dist.destroy_process_group()
 
 
+@contextlib.contextmanager
+def with_dist_cleanup():
+    """
+    Context Manager or Decorator version of cleanup_dist().
+    """
+    yield
+    cleanup_dist()
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                      General Tools                                      #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
