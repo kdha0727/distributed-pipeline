@@ -7,7 +7,6 @@ def parse_args():
     return parser.parse_args()
 
 
-@record
 def main(namespace):
 
     # Create config from parsed argument namespace
@@ -25,8 +24,11 @@ def main(namespace):
     from utils.trainer import TrainLoop
 
     # Setup distributed
-    if os.getenv("LOCAL_RANK", None):
+    if os.getenv("LOCAL_RANK", None) and not dist_util.is_initialized():
         dist_util.setup_dist()
+        with dist_util.with_dist_cleanup():
+            main(namespace)
+        return
     rank = dist_util.get_rank()
     dist_util.barrier()  # Sync
 
@@ -124,4 +126,4 @@ def main(namespace):
 
 
 if __name__ == "__main__":
-    main(parse_args())
+    record(main)(parse_args())
