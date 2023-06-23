@@ -102,6 +102,14 @@ def setup_dist(*args):
         torch.cuda.empty_cache()
 
 
+def cleanup_dist():
+    """
+    Clean up a distributed process group.
+    """
+    if is_initialized():
+        dist.destroy_process_group()
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                      General Tools                                      #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
