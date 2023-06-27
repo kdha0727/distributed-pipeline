@@ -17,7 +17,7 @@
 * Complete `train.py` to make sense with all code signatures you modified.
 * Modify setting json file, after copying default train settings with command,
   ```
-  python3 -c "from config;train import TrainSettings as T; print(T().json(indent=2))" >> train_config.json
+  python3 -c "from config import TrainSettings as T; print(T().json(indent=2))" >> train_config.json
   ```
 
 <details>
