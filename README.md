@@ -47,8 +47,11 @@ def main():
             super().__init__()
             self.param = torch.nn.Parameter(torch.ones(1))
 
-        def forward(self, x):
-            return self.param * x
+        def forward(self, x, target=None):
+            output = self.param * x
+            if target is not None:
+                return (target - output) ** 2
+            return output
 
     model = Model()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-1)
@@ -75,7 +78,7 @@ def main():
     target = torch.ones(1, device=dist_util.dev()) * 0.5 * (dist_util.get_rank() + 1)
 
     with ddp_model.no_sync() if dist_util.is_initialized() else dist_util.dummy_context():
-        loss = (target - ddp_model(data)) ** 2
+        loss = ddp_model(data, target)
         dist_util.sequential_print("rank", rank, "loss :", loss.item())
         dist_util.print_master_node()
 
@@ -83,7 +86,7 @@ def main():
         dist_util.sequential_print("rank", rank, "grad :", model.param.grad.item())
         dist_util.print_master_node()
 
-    loss = (target - ddp_model(data)) ** 2
+    loss = ddp_model(data, target)
     dist_util.sequential_print("rank", rank, "loss :", loss.item())
     dist_util.print_master_node()
 
