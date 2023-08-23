@@ -1,30 +1,37 @@
-import numpy as np
 import torch
 
 
 class InfiniteSampler(torch.utils.data.Sampler):
-    def __init__(self, dataset, rank: int = 0, num_replicas: int = 1, shuffle: bool = True, seed: int = 0, window_size: float = 0.5):
+    def __init__(
+        self, 
+        dataset, num_replicas: int = 1,
+        rank: int = None, shuffle: bool = True, 
+        seed: int = 0, window_size: float = 0.5
+    ) -> None:
+        from . import dist_util
         assert len(dataset) > 0
         assert num_replicas > 0
         assert 0 <= rank < num_replicas
         assert 0 <= window_size <= 1
         super().__init__(dataset)
         self.dataset = dataset
-        self.rank = rank
-        self.num_replicas = num_replicas
+        self.num_replicas = num_replicas if num_replicas is not None else dist_util.get_world_size()
+        self.rank = rank if rank is not None else dist_util.get_rank()
         self.shuffle = shuffle
         self.seed = seed
         self.window_size = window_size
 
     def __iter__(self):
         length = len(self.dataset)
-        order = np.arange(length)
-        rnd = None
-        window = 0
         if self.shuffle:
-            rnd = np.random.RandomState(self.seed)
-            rnd.shuffle(order)
-            window = int(np.rint(length * self.window_size))
+            g = torch.Generator()
+            g.manual_seed(self.seed + self.epoch)
+            order = torch.randperm(length, generator=g).tolist()  # type: ignore[arg-type]
+            window = round(length * self.window_size)
+        else:
+            g = None
+            order = list(range(length))  # type: ignore[arg-type]
+            window = 0
 
         idx = 0
         while True:
@@ -32,6 +39,6 @@ class InfiniteSampler(torch.utils.data.Sampler):
             if idx % self.num_replicas == self.rank:
                 yield order[i]
             if window >= 2:
-                j = (i - rnd.randint(window)) % length
+                j = (i - torch.randint(window, size=(), generator=g)) % length
                 order[i], order[j] = order[j], order[i]
             idx += 1
