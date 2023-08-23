@@ -32,6 +32,7 @@ from typing import overload, Sequence, Optional, Union, ContextManager, Any
 
 import torch
 import torch.distributed as dist
+from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.cuda import is_available as _cuda_available
 
 
@@ -235,8 +236,9 @@ def sequential_print(*args: ..., **kwargs: ...) -> None:
     Print argument sequentially by rank order.
     Arguments are passed to print function.
     """
+    rank = get_rank()
     for i in range(get_world_size()):
-        if i == get_rank():
+        if i == rank:
             print(*args, **kwargs)
         barrier()
 
@@ -257,6 +259,28 @@ def dummy_context() -> ContextManager[None]:
     Dummy context manager.
     """
     yield
+
+
+@contextlib.contextmanager
+def no_sync(*modules: DistributedDataParallel) -> ContextManager[None]:
+    """
+    Context Manager or Decorator of multiple modules' no_sync().
+    Usage
+        with no_sync(ddp_module_1, ddp_module_2, ddp_module_3, ddp_module_n):
+            ... # your code
+    """
+    if not modules:
+        yield
+    else:
+        with contextlib.ExitStack() as stk:
+            for module in modules:
+                if not isinstance(module, DistributedDataParallel):
+                    raise TypeError(
+                        "arg {!r} should be instance of DistributedDataParallel, got {}"
+                        .format(module, type(module))
+                    )
+                stk.enter_context(module.no_sync())
+            yield
 
 
 try:
