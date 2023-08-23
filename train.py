@@ -57,6 +57,7 @@ def main(namespace):
         # TODO: add args on your own
         deterministic=False,
         loop=True,
+        seed=args.seed,
         num_loader_proc=args.data_loader_workers,
     )
     data_valid = load_data_from_args(
@@ -66,6 +67,7 @@ def main(namespace):
         # TODO: add args on your own
         deterministic=True,
         loop=True,
+        seed=args.seed,
         num_loader_proc=args.data_loader_workers,
     )
     dist_util.barrier()  # Sync
