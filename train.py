@@ -1,3 +1,4 @@
+import os
 from torch.distributed.elastic.multiprocessing.errors import record
 from config.train import TrainSettings
 
@@ -7,13 +8,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(namespace):
-
-    # Create config from parsed argument namespace
-    args: TrainSettings = TrainSettings.from_argparse(namespace)
+def train(rank, args):
 
     # Import dependencies
-    import os
     import time
     import json
 
@@ -23,13 +20,6 @@ def main(namespace):
     from utils.initialization import create_model_from_config, seed_all
     from utils.trainer import TrainLoop
 
-    # Setup distributed
-    if os.getenv("LOCAL_RANK", None) and not dist_util.is_initialized():
-        dist_util.setup_dist()
-        with dist_util.with_dist_cleanup():
-            main(namespace)
-        return
-    rank = dist_util.get_rank()
     dist_util.barrier()  # Sync
 
     # Set checkpoint path
@@ -106,7 +96,7 @@ def main(namespace):
 
     # Run train loop
     logger.log("### Training...")
-    TrainLoop(
+    train_loop = TrainLoop(
         model=model,
         # TODO: add your argument
         data=data,
@@ -124,8 +114,30 @@ def main(namespace):
         eval_data=data_valid,
         eval_interval=args.eval_interval,
         eval_callbacks=[]
-    ).run_loop()
+    )
+    train_loop.run_loop()
+
+
+@record
+def main(namespace):
+
+    # Create config from parsed argument namespace
+    args: TrainSettings = TrainSettings.from_argparse(namespace)
+
+    # Import dist_util
+    from basic_utils import dist_util
+
+    # Setup distributed
+    if "LOCAL_RANK" in os.environ:
+        dist_util.setup_dist()
+    rank = dist_util.get_rank()
+
+    # Run training
+    try:
+        main(rank, args)
+    finally:
+        dist_util.cleanup_dist()
 
 
 if __name__ == "__main__":
-    record(main)(parse_args())
+    main(parse_args())
