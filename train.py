@@ -134,7 +134,7 @@ def main(namespace):
 
     # Run training
     try:
-        main(rank, args)
+        train(rank, args)
     finally:
         dist_util.cleanup_dist()
 
